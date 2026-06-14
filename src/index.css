@@ -4,9 +4,37 @@
   themes: light --default, dark --prefersdark;
 }
 
-/* ===== Theme Transitions ===== */
+/* ===== Theme Transitions via View Transition API ===== */
+/* Disable default cross-fade; use custom circular clip-path animation */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* Old snapshot: stay still underneath */
+::view-transition-old(root) {
+  z-index: 0;
+}
+
+/* New snapshot: reveal with expanding circle from click point */
+::view-transition-new(root) {
+  z-index: 1;
+  animation: vt-circle-expand 0.5s cubic-bezier(0.25, 0.8, 0.25, 1) both;
+}
+
+@keyframes vt-circle-expand {
+  from {
+    clip-path: circle(0px at var(--vt-x, 50%) var(--vt-y, 50%));
+  }
+  to {
+    clip-path: circle(var(--vt-r, 100vmax) at var(--vt-x, 50%) var(--vt-y, 50%));
+  }
+}
+
+/* Fallback for browsers without View Transition API */
 html {
-  transition: background-color 400ms ease, color 400ms ease;
+  transition: background-color 500ms ease, color 500ms ease;
 }
 
 /* ===== Base Layer ===== */
@@ -18,7 +46,7 @@ html {
   }
 
   body {
-    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    font-family: "Geist", system-ui, -apple-system, sans-serif;
     font-size: 14px;
     line-height: 1.5;
     font-weight: 400;
@@ -42,8 +70,8 @@ html {
 
 /* ===== Typography Scale ===== */
 @theme {
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+  --font-sans: "Geist", system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono", "Fira Code", monospace;
   --color-primary: #4F46E5;
   --color-primary-light: #6366F1;
   --color-accent: #06B6D4;

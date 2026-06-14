@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { invoke } from "@tauri-apps/api/core";
@@ -55,6 +55,42 @@ function App() {
   useEffect(() => {
     i18n.changeLanguage(language);
   }, [language]);
+
+  // Theme toggle using View Transition API — true circular reveal.
+  // The browser captures old & new snapshots, then we animate the
+  // new snapshot's clip-path from a point to full screen.
+  const handleThemeToggle = useCallback(
+    (e: React.MouseEvent, newTheme: "light" | "dark") => {
+      const x = e.clientX;
+      const y = e.clientY;
+      // Calculate radius that covers the entire viewport from click point
+      const r = Math.hypot(
+        Math.max(x, window.innerWidth - x),
+        Math.max(y, window.innerHeight - y)
+      );
+      document.documentElement.style.setProperty("--vt-x", `${x}px`);
+      document.documentElement.style.setProperty("--vt-y", `${y}px`);
+      document.documentElement.style.setProperty("--vt-r", `${r}px`);
+
+      // Check for View Transition API support
+      if ("startViewTransition" in document) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (document as any).startViewTransition(() => {
+          setTheme(newTheme);
+          invoke("save_settings", {
+            settings: { theme: newTheme, language, target_dir: useSettingsStore.getState().targetDir },
+          }).catch(console.error);
+        });
+      } else {
+        // Fallback: instant switch
+        setTheme(newTheme);
+        invoke("save_settings", {
+          settings: { theme: newTheme, language, target_dir: useSettingsStore.getState().targetDir },
+        }).catch(console.error);
+      }
+    },
+    [language]
+  );
 
   return (
     <div className="flex flex-col h-screen bg-base-100 text-base-content overflow-hidden">
@@ -133,7 +169,7 @@ function App() {
       </main>
 
       {/* Settings Bar */}
-      <SettingsBar onToast={addToast} />
+      <SettingsBar onToast={addToast} onThemeToggle={handleThemeToggle} />
 
       {/* Toast Container */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />

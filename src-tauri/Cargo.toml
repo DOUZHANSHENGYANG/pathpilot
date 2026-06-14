@@ -1,0 +1,31 @@
+[package]
+name = "app"
+version = "0.1.0"
+description = "PathPilot - A lightweight Windows file path navigator and file operations assistant"
+authors = ["dz"]
+license = "MIT"
+repository = "https://github.com/AiFei0/pathpilot"
+edition = "2021"
+rust-version = "1.77.2"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.6.2", features = [] }
+
+[dependencies]
+serde_json = "1"
+serde = { version = "1", features = ["derive"] }
+log = "0.4"
+tauri = { version = "2.11.2", features = [] }
+tauri-plugin-log = "2"
+tauri-plugin-dialog = "2"
+shellexpand = "3"
+windows = { version = "0.58", features = [
+  "Win32_UI_Shell",
+  "Win32_Foundation",
+] }

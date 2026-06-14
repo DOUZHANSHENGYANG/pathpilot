@@ -1,0 +1,23 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1024" y2="1024">
+      <stop offset="0%" stop-color="#4F46E5"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="200" fill="url(#bg)"/>
+  <!-- Path arrow icon -->
+  <g transform="translate(512,480)">
+    <!-- Main path line -->
+    <path d="M-280 0 L-60 0 L60 200 L280 200" stroke="white" stroke-width="56" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <!-- Arrowhead -->
+    <path d="M280 200 L180 130 L180 270 Z" fill="white"/>
+    <!-- Source dot -->
+    <circle cx="-280" cy="0" r="36" fill="white" opacity="0.9"/>
+    <!-- Target dot -->
+    <circle cx="280" cy="200" r="36" fill="white" opacity="0.9"/>
+  </g>
+  <!-- Bottom text: "PP" -->
+  <text x="512" y="820" text-anchor="middle" font-family="Inter, sans-serif" font-size="160" font-weight="700" fill="white" opacity="0.25">PP</text>
+</svg>

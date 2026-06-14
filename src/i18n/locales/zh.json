@@ -1,0 +1,48 @@
+{
+  "app": {
+    "title": "PathPilot",
+    "subtitle": "文件路径导航助手"
+  },
+  "input": {
+    "placeholder": "输入 Windows 路径（可带引号）…",
+    "clear": "清除",
+    "parse": "解析"
+  },
+  "status": {
+    "file": "文件",
+    "directory": "目录",
+    "notFound": "路径不存在",
+    "ready": "等待输入路径",
+    "parsing": "解析中…"
+  },
+  "actions": {
+    "copy": "复制到目标",
+    "move": "剪切到目标",
+    "openSource": "打开源目录",
+    "openTarget": "打开目标目录"
+  },
+  "settings": {
+    "targetDir": "目标目录",
+    "targetDirHint": "默认：桌面",
+    "theme": "主题",
+    "themeLight": "亮色",
+    "themeDark": "暗色",
+    "language": "语言"
+  },
+  "toast": {
+    "copySuccess": "已复制到目标目录",
+    "moveSuccess": "已剪切到目标目录",
+    "copyFailed": "复制失败",
+    "moveFailed": "剪切失败",
+    "openedSource": "已打开源目录",
+    "openedTarget": "已打开目标目录",
+    "parseFailed": "路径解析失败",
+    "settingsSaved": "设置已保存"
+  },
+  "window": {
+    "minimize": "最小化",
+    "maximize": "最大化",
+    "restore": "还原",
+    "close": "关闭"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "app": {
+    "title": "PathPilot",
+    "subtitle": "File Path Navigator"
+  },
+  "input": {
+    "placeholder": "Enter Windows path (quotes optional)…",
+    "clear": "Clear",
+    "parse": "Parse"
+  },
+  "status": {
+    "file": "File",
+    "directory": "Directory",
+    "notFound": "Path not found",
+    "ready": "Waiting for input",
+    "parsing": "Parsing…"
+  },
+  "actions": {
+    "copy": "Copy to Target",
+    "move": "Move to Target",
+    "openSource": "Open Source",
+    "openTarget": "Open Target"
+  },
+  "settings": {
+    "targetDir": "Target Directory",
+    "targetDirHint": "Default: Desktop",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "language": "Language"
+  },
+  "toast": {
+    "copySuccess": "Copied to target directory",
+    "moveSuccess": "Moved to target directory",
+    "copyFailed": "Copy failed",
+    "moveFailed": "Move failed",
+    "openedSource": "Source directory opened",
+    "openedTarget": "Target directory opened",
+    "parseFailed": "Path parse failed",
+    "settingsSaved": "Settings saved"
+  },
+  "window": {
+    "minimize": "Minimize",
+    "maximize": "Maximize",
+    "restore": "Restore",
+    "close": "Close"
+  }
+}

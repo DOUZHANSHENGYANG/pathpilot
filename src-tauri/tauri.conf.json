@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "pathpilot",
+  "productName": "PathPilot",
   "version": "0.1.0",
   "identifier": "com.pathpilot.app",
   "build": {

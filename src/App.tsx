@@ -26,13 +26,14 @@ function App() {
   const language = useSettingsStore((s) => s.language);
   const setTheme = useSettingsStore((s) => s.setTheme);
   const setTargetDir = useSettingsStore((s) => s.setTargetDir);
+  const setConfigDir = useSettingsStore((s) => s.setConfigDir);
   const { toasts, addToast, removeToast } = useToast();
   const [pathInfo, setPathInfo] = useState<PathInfo | null>(null);
   const [sourcePath, setSourcePath] = useState("");
 
   // Load settings from Rust backend on startup
   useEffect(() => {
-    invoke<{ theme: string; language: string; target_dir: string }>("load_settings")
+    invoke<{ theme: string; language: string; target_dir: string; config_dir: string }>("load_settings")
       .then((settings) => {
         if (settings.theme) {
           setTheme(settings.theme as "light" | "dark");
@@ -43,6 +44,9 @@ function App() {
         }
         if (settings.target_dir) {
           setTargetDir(settings.target_dir);
+        }
+        if (settings.config_dir) {
+          setConfigDir(settings.config_dir);
         }
       })
       .catch(console.error);
@@ -72,21 +76,27 @@ function App() {
       document.documentElement.style.setProperty("--vt-y", `${y}px`);
       document.documentElement.style.setProperty("--vt-r", `${r}px`);
 
+      const state = useSettingsStore.getState();
+      const saveSettings = () => invoke("save_settings", {
+        settings: {
+          theme: newTheme,
+          language,
+          target_dir: state.targetDir,
+          config_dir: state.configDir,
+        },
+      }).catch(console.error);
+
       // Check for View Transition API support
       if ("startViewTransition" in document) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (document as any).startViewTransition(() => {
           setTheme(newTheme);
-          invoke("save_settings", {
-            settings: { theme: newTheme, language, target_dir: useSettingsStore.getState().targetDir },
-          }).catch(console.error);
+          saveSettings();
         });
       } else {
         // Fallback: instant switch
         setTheme(newTheme);
-        invoke("save_settings", {
-          settings: { theme: newTheme, language, target_dir: useSettingsStore.getState().targetDir },
-        }).catch(console.error);
+        saveSettings();
       }
     },
     [language]

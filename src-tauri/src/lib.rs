@@ -26,6 +26,7 @@ pub struct Settings {
     pub theme: String,
     pub language: String,
     pub target_dir: String,
+    pub config_dir: String,
 }
 
 // ─── Helper Functions ────────────────────────────────────────────────────────
@@ -47,6 +48,35 @@ fn get_desktop_path() -> String {
     }
     // Last resort
     String::from("C:\\Users\\Default\\Desktop")
+}
+
+fn get_exe_dir() -> Result<PathBuf, String> {
+    std::env::current_exe()
+        .map_err(|e| format!("Failed to get exe path: {}", e))?
+        .parent()
+        .map(|p| p.to_path_buf())
+        .ok_or_else(|| "Failed to get exe parent directory".to_string())
+}
+
+fn get_config_dir() -> PathBuf {
+    let exe_dir = get_exe_dir().unwrap_or_else(|_| PathBuf::from("."));
+    let pointer_file = exe_dir.join("config_dir.txt");
+    if pointer_file.exists() {
+        if let Ok(content) = fs::read_to_string(&pointer_file) {
+            let trimmed = content.trim();
+            if !trimmed.is_empty() {
+                let path = PathBuf::from(trimmed);
+                if path.exists() && path.is_dir() {
+                    return path;
+                }
+            }
+        }
+    }
+    exe_dir
+}
+
+fn get_settings_path(config_dir: &Path) -> PathBuf {
+    config_dir.join("settings.json")
 }
 
 fn normalize_path(input: &str) -> String {
@@ -234,24 +264,22 @@ fn open_in_explorer(path: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn load_settings(app: tauri::AppHandle) -> Result<Settings, String> {
+fn load_settings() -> Result<Settings, String> {
     println!("[load_settings] Loading settings...");
 
-    // Get exe directory
-    let exe_dir = std::env::current_exe()
-        .map_err(|e| format!("Failed to get exe path: {}", e))?
-        .parent()
-        .ok_or_else(|| "Failed to get exe parent directory".to_string())?
-        .to_path_buf();
-
-    let settings_path = exe_dir.join("settings.json");
-    println!("[load_settings] Settings path: {:?}", settings_path);
+    let config_dir = get_config_dir();
+    let settings_path = get_settings_path(&config_dir);
+    println!("[load_settings] Config dir: {:?}, Settings path: {:?}", config_dir, settings_path);
 
     if settings_path.exists() {
         let content = fs::read_to_string(&settings_path)
             .map_err(|e| format!("Failed to read settings.json: {}", e))?;
-        let settings: Settings = serde_json::from_str(&content)
+        let mut settings: Settings = serde_json::from_str(&content)
             .map_err(|e| format!("Failed to parse settings.json: {}", e))?;
+        // Ensure config_dir is present (backwards compat)
+        if settings.config_dir.is_empty() {
+            settings.config_dir = config_dir.to_string_lossy().to_string();
+        }
         println!("[load_settings] Loaded: {:?}", settings);
         Ok(settings)
     } else {
@@ -259,27 +287,36 @@ fn load_settings(app: tauri::AppHandle) -> Result<Settings, String> {
             theme: "light".to_string(),
             language: "zh".to_string(),
             target_dir: get_desktop_path(),
+            config_dir: config_dir.to_string_lossy().to_string(),
         };
-        println!(
-            "[load_settings] No settings file, using defaults: {:?}",
-            defaults
-        );
+        println!("[load_settings] No settings file, using defaults: {:?}", defaults);
         Ok(defaults)
     }
 }
 
 #[tauri::command]
-fn save_settings(app: tauri::AppHandle, settings: Settings) -> Result<(), String> {
+fn save_settings(settings: Settings) -> Result<(), String> {
     println!("[save_settings] Saving settings: {:?}", settings);
 
-    let exe_dir = std::env::current_exe()
-        .map_err(|e| format!("Failed to get exe path: {}", e))?
-        .parent()
-        .ok_or_else(|| "Failed to get exe parent directory".to_string())?
-        .to_path_buf();
+    // If user changed config_dir, persist the pointer file
+    let exe_dir = get_exe_dir()?;
+    let config_dir = PathBuf::from(&settings.config_dir);
+    let pointer_file = exe_dir.join("config_dir.txt");
 
-    let settings_path = exe_dir.join("settings.json");
+    if config_dir != exe_dir {
+        fs::write(&pointer_file, &settings.config_dir)
+            .map_err(|e| format!("Failed to write config_dir.txt: {}", e))?;
+    } else if pointer_file.exists() {
+        // If user reset to default, remove the pointer file
+        let _ = fs::remove_file(&pointer_file);
+    }
+
+    let settings_path = get_settings_path(&config_dir);
     println!("[save_settings] Writing to: {:?}", settings_path);
+
+    // Ensure config directory exists
+    fs::create_dir_all(&config_dir)
+        .map_err(|e| format!("Failed to create config dir: {}", e))?;
 
     let json = serde_json::to_string_pretty(&settings)
         .map_err(|e| format!("Failed to serialize settings: {}", e))?;
@@ -289,6 +326,11 @@ fn save_settings(app: tauri::AppHandle, settings: Settings) -> Result<(), String
 
     println!("[save_settings] Done.");
     Ok(())
+}
+
+#[tauri::command]
+fn get_config_dir_command() -> Result<String, String> {
+    Ok(get_config_dir().to_string_lossy().to_string())
 }
 
 // ─── Application Entry Point ─────────────────────────────────────────────────
@@ -314,6 +356,7 @@ pub fn run() {
             open_in_explorer,
             load_settings,
             save_settings,
+            get_config_dir_command,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
